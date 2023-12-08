@@ -1,14 +1,8 @@
 import "./pages/index.css";
-import { initialCards, addCard } from "./components/cards.js";
-import {
-  modalOpen,
-  closePopupWithButton,
-  handleFormEditProfile,
-  handleFormNewCard,
-} from "./components/modal.js";
+import { initialCards } from "./components/cards.js";
+import { addCard, handleFormNewCard } from "./components/card.js";
+import { openModal, closeModal } from "./components/modal.js";
 // Обьявление переменных:
-export const placesList = document.querySelector(".places__list");
-export const cardTemplate = document.querySelector("#card-template").content;
 export const profileTitle = document.querySelector(".profile__title");
 export const profileDescription = document.querySelector(
   ".profile__description"
@@ -21,21 +15,49 @@ export const popupNewCard = document.querySelector(".popup_type_new-card");
 export const popupImage = document.querySelector(".popup_type_image");
 export const buttonPopupsClose = document.querySelectorAll(".popup__close");
 //Элементы формы:
-export const formsElement = document.querySelectorAll(".popup__form");
-export const nameProfileInput = formsElement[0].querySelector(
+export const formsElementEditProfile = popupEdit.querySelector(
+  ".popup__form[name='edit-profile']"
+);
+export const formsElementNewPlace = popupNewCard.querySelector(
+  ".popup__form[name='new-place']"
+);
+export const nameProfileInput = formsElementEditProfile.querySelector(
   ".popup__input_type_name"
 );
-export const jobInput = formsElement[0].querySelector(
+export const jobInput = formsElementEditProfile.querySelector(
   ".popup__input_type_description"
 );
-export const nameNewCardInput = formsElement[1].querySelector(
+export const nameNewCardInput = formsElementNewPlace.querySelector(
   ".popup__input_type_card-name"
 );
-export const urlInput = formsElement[1].querySelector(".popup__input_type_url");
-initialCards.forEach(addCard);
+export const urlInput = formsElementNewPlace.querySelector(
+  ".popup__input_type_url"
+);
 
-buttonEdit.addEventListener("click", modalOpen);
-buttonAdd.addEventListener("click", modalOpen);
-buttonPopupsClose.forEach(closePopupWithButton);
-formsElement[0].addEventListener("submit", handleFormEditProfile);
-formsElement[1].addEventListener("submit", handleFormNewCard);
+function handleFormEditProfile(evt) {
+  evt.preventDefault();
+  profileTitle.textContent = nameProfileInput.value;
+  profileDescription.textContent = jobInput.value;
+  closeModal(evt);
+}
+
+initialCards.forEach((evt) => {
+  addCard(evt, openModal);
+});
+
+buttonEdit.addEventListener("click", (evt) => {
+  openModal(evt, popupEdit);
+});
+
+buttonAdd.addEventListener("click", (evt) => {
+  openModal(evt, popupNewCard);
+});
+
+buttonPopupsClose.forEach((evt) => {
+  evt.addEventListener("click", closeModal);
+});
+
+formsElementEditProfile.addEventListener("submit", handleFormEditProfile);
+formsElementNewPlace.addEventListener("submit", (evt) => {
+  handleFormNewCard(evt, openModal, closeModal);
+});
