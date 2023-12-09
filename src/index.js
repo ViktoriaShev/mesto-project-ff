@@ -1,63 +1,99 @@
 import "./pages/index.css";
 import { initialCards } from "./components/cards.js";
-import { addCard, handleFormNewCard } from "./components/card.js";
+import { makeCard, likeCard, deleteCard } from "./components/card.js";
 import { openModal, closeModal } from "./components/modal.js";
 // Обьявление переменных:
-export const profileTitle = document.querySelector(".profile__title");
-export const profileDescription = document.querySelector(
-  ".profile__description"
-);
-export const buttonEdit = document.querySelector(".profile__edit-button");
-export const buttonAdd = document.querySelector(".profile__add-button");
+const placesList = document.querySelector(".places__list");
+const profileTitle = document.querySelector(".profile__title");
+const profileDescription = document.querySelector(".profile__description");
+const buttonEdit = document.querySelector(".profile__edit-button");
+const buttonAdd = document.querySelector(".profile__add-button");
 //Модальные окна:
-export const popupEdit = document.querySelector(".popup_type_edit");
-export const popupNewCard = document.querySelector(".popup_type_new-card");
-export const popupImage = document.querySelector(".popup_type_image");
-export const buttonPopupsClose = document.querySelectorAll(".popup__close");
+const popupEdit = document.querySelector(".popup_type_edit");
+const popupNewCard = document.querySelector(".popup_type_new-card");
+const popupImage = document.querySelector(".popup_type_image");
+const buttonPopupsClose = document.querySelectorAll(".popup__close");
 //Элементы формы:
-export const formsElementEditProfile = popupEdit.querySelector(
+const formsElementEditProfile = popupEdit.querySelector(
   ".popup__form[name='edit-profile']"
 );
-export const formsElementNewPlace = popupNewCard.querySelector(
+const formsElementNewPlace = popupNewCard.querySelector(
   ".popup__form[name='new-place']"
 );
-export const nameProfileInput = formsElementEditProfile.querySelector(
+const nameProfileInput = formsElementEditProfile.querySelector(
   ".popup__input_type_name"
 );
-export const jobInput = formsElementEditProfile.querySelector(
+const jobInput = formsElementEditProfile.querySelector(
   ".popup__input_type_description"
 );
-export const nameNewCardInput = formsElementNewPlace.querySelector(
+const nameNewCardInput = formsElementNewPlace.querySelector(
   ".popup__input_type_card-name"
 );
-export const urlInput = formsElementNewPlace.querySelector(
-  ".popup__input_type_url"
-);
+const urlInput = formsElementNewPlace.querySelector(".popup__input_type_url");
 
-function handleFormEditProfile(evt) {
+function handlerOpenPopupImage(evt) {
+  const selectedPopupImage = popupImage.querySelector(".popup__image");
+  const popupCaption = popupImage.querySelector(".popup__caption");
+  selectedPopupImage.src = evt.target.src;
+  selectedPopupImage.alt = evt.target.alt;
+  popupCaption.textContent = evt.target.alt;
+  openModal(popupImage);
+}
+
+function addCard(cardData) {
+  const readyCard = makeCard(
+    cardData,
+    deleteCard,
+    likeCard,
+    handlerOpenPopupImage
+  );
+  placesList.append(readyCard);
+}
+
+function handlerFormEditProfile(evt) {
   evt.preventDefault();
   profileTitle.textContent = nameProfileInput.value;
   profileDescription.textContent = jobInput.value;
-  closeModal(evt);
+  closeModal(popupEdit);
+}
+
+function handlerFormNewCard(evt, closeModal) {
+  evt.preventDefault();
+  const newCards = { name: nameNewCardInput.value, link: urlInput.value };
+  const readyCard = makeCard(
+    newCards,
+    deleteCard,
+    likeCard,
+    handlerOpenPopupImage
+  );
+  placesList.prepend(readyCard);
+  nameNewCardInput.value = "";
+  urlInput.value = "";
+  closeModal(popupNewCard);
 }
 
 initialCards.forEach((evt) => {
-  addCard(evt, openModal);
+  addCard(evt);
 });
 
 buttonEdit.addEventListener("click", (evt) => {
-  openModal(evt, popupEdit);
+  nameProfileInput.value = profileTitle.textContent;
+  jobInput.value = profileDescription.textContent;
+  openModal(popupEdit);
 });
 
 buttonAdd.addEventListener("click", (evt) => {
-  openModal(evt, popupNewCard);
+  openModal(popupNewCard);
 });
 
 buttonPopupsClose.forEach((evt) => {
-  evt.addEventListener("click", closeModal);
+  evt.addEventListener("click", (evt) => {
+    closeModal(evt.target.closest(".popup"));
+  });
 });
 
-formsElementEditProfile.addEventListener("submit", handleFormEditProfile);
+formsElementEditProfile.addEventListener("submit", handlerFormEditProfile);
+
 formsElementNewPlace.addEventListener("submit", (evt) => {
-  handleFormNewCard(evt, openModal, closeModal);
+  handlerFormNewCard(evt, closeModal);
 });
