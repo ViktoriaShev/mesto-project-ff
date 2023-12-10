@@ -13,6 +13,8 @@ const popupEdit = document.querySelector(".popup_type_edit");
 const popupNewCard = document.querySelector(".popup_type_new-card");
 const popupImage = document.querySelector(".popup_type_image");
 const buttonPopupsClose = document.querySelectorAll(".popup__close");
+const selectedPopupImage = popupImage.querySelector(".popup__image");
+const popupCaption = popupImage.querySelector(".popup__caption");
 //Элементы формы:
 const formsElementEditProfile = popupEdit.querySelector(
   ".popup__form[name='edit-profile']"
@@ -32,8 +34,6 @@ const nameNewCardInput = formsElementNewPlace.querySelector(
 const urlInput = formsElementNewPlace.querySelector(".popup__input_type_url");
 
 function handlerOpenPopupImage(evt) {
-  const selectedPopupImage = popupImage.querySelector(".popup__image");
-  const popupCaption = popupImage.querySelector(".popup__caption");
   selectedPopupImage.src = evt.target.src;
   selectedPopupImage.alt = evt.target.alt;
   popupCaption.textContent = evt.target.alt;
