@@ -1,32 +1,42 @@
-const showInputError = (formElement, inputElement, errorMessage) => {
+const showInputError = (
+  formElement,
+  inputElement,
+  errorMessage,
+  inputErrorClass
+) => {
   const errorElement = formElement.querySelector(
     `.input_${inputElement.name}-error`
   );
-  inputElement.classList.add("popup__input_type_error");
+  inputElement.classList.add(inputErrorClass);
   errorElement.textContent = errorMessage;
 };
 
-const hideInputError = (formElement, inputElement) => {
+const hideInputError = (formElement, inputElement, inputErrorClass) => {
   const errorElement = formElement.querySelector(
     `.input_${inputElement.name}-error`
   );
   errorElement.textContent = "";
-  inputElement.classList.remove("popup__input_type_error");
+  inputElement.classList.remove(inputErrorClass);
 };
 
-export function checkInputValidity(formSelector, inputSelector) {
+export function checkInputValidity(
+  formSelector,
+  inputSelector,
+  inputErrorClass
+) {
   if (inputSelector.validity.patternMismatch) {
     inputSelector.setCustomValidity(inputSelector.dataset.errorMessage);
   } else {
     inputSelector.setCustomValidity("");
   }
   if (inputSelector.validity.valid) {
-    hideInputError(formSelector, inputSelector);
+    hideInputError(formSelector, inputSelector, inputErrorClass);
   } else {
     showInputError(
       formSelector,
       inputSelector,
-      inputSelector.validationMessage
+      inputSelector.validationMessage,
+      inputErrorClass
     );
   }
 }
@@ -38,21 +48,17 @@ const hasInvalidInput = (inputList) => {
 };
 
 export function enableValidation(data) {
-  const inputListFormProfile = Array.from(
-    data.formSelector.querySelectorAll(".popup__input")
-  );
-  const ButtonPopupSubmit = data.formSelector.querySelector(".popup__button");
   toggleButtonState(
-    inputListFormProfile,
-    ButtonPopupSubmit,
+    data.inputListFormProfile,
+    data.buttonSubmit,
     data.inactiveButtonClass
   );
-  inputListFormProfile.forEach((inputElement) => {
+  data.inputListFormProfile.forEach((inputElement) => {
     inputElement.addEventListener("input", (evt) => {
-      checkInputValidity(data.formSelector, inputElement);
+      checkInputValidity(data.formSelector, inputElement, data.inputErrorClass);
       toggleButtonState(
-        inputListFormProfile,
-        ButtonPopupSubmit,
+        data.inputListFormProfile,
+        data.buttonSubmit,
         data.inactiveButtonClass
       );
     });
@@ -62,14 +68,14 @@ export function enableValidation(data) {
 export function clearValidation(
   formElement,
   inputListFormProfile,
-  ButtonPopupSubmit
+  buttonSubmit
 ) {
-  toggleButtonState(inputListFormProfile, ButtonPopupSubmit);
+  toggleButtonState(inputListFormProfile, buttonSubmit);
   inputListFormProfile.forEach((inputElement) => {
     hideInputError(formElement, inputElement);
     inputElement.removeEventListener("input", (evt) => {
       checkInputValidity(formElement, inputElement);
-      toggleButtonState(inputListFormProfile, ButtonPopupSubmit);
+      toggleButtonState(inputListFormProfile, buttonSubmit);
     });
   });
 }

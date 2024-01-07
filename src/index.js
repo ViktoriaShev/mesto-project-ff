@@ -1,13 +1,13 @@
 import "./pages/index.css";
-import { makeCard, likeCard, deleteCard } from "./components/card.js";
+import { makeCard, likeCard, launchDeleteCard } from "./components/card.js";
 import { openModal, closeModal } from "./components/modal.js";
 import { enableValidation, clearValidation } from "./components/validation.js";
 import {
-  initialization,
-  downloadCards,
-  updatedUserData,
+  getUserInfo,
+  getCards,
+  updateUserServerInfo,
   createNewPost,
-  requestChacgeAvatar,
+  changeAvatar,
 } from "./components/api.js";
 // Обьявление переменных:
 const validationLink = /http.*(jpeg|jpg|gif|png)/gi;
@@ -74,52 +74,50 @@ const buttonPopupAddCardSubmit =
 const buttonPopupNewAvatarSubmit =
   formElementEditAvatar.querySelector(".popup__button");
 
+const dataForCards = [getUserInfo, getCards];
+
 function addCard(data) {
-  return makeCard(data, deleteCard, likeCard, handlerOpenPopupImage);
+  return makeCard(data, launchDeleteCard, likeCard, handlerOpenPopupImage);
 }
-function loadingAccount(data) {
+
+function updateUserInfo(data) {
   profileTitle.textContent = data.name;
   profileDescription.textContent = data.about;
   profileImage.setAttribute("style", `background-image: url(${data.avatar})`);
 }
-function PreparingCards(data) {
-  data[1].forEach((dataCard) => {
+
+function renderInitialCards(data) {
+  data.forEach((dataCard) => {
     if (!validationLink.test(dataCard.link)) {
     } else {
       const readyCard = addCard({
         informationCard: dataCard,
-        informationMe: data[0],
+        informationMe: dataUserInfo,
       });
       placesList.append(readyCard);
     }
   });
 }
+
 function PreparingCardsAndAccount() {
-  const dataForCards = [initialization, downloadCards];
   Promise.all(dataForCards)
     .then((data) => {
-      loadingAccount(data[0]);
-      PreparingCards(data);
+      window.dataUserInfo = data[0];
+      updateUserInfo(dataUserInfo);
+      renderInitialCards(data[1]);
     })
     .catch((err) => {
       console.log(err);
     });
 }
 
-export function PreparingNewCard(dataNewCard) {
-  const dataForCards = [initialization, downloadCards];
-  Promise.all(dataForCards)
-    .then((data) => {
-      const dataCard = dataNewCard;
-      const readyCard = addCard({
-        informationCard: dataCard,
-        informationMe: data[0],
-      });
-      placesList.prepend(readyCard);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+export function renderNewCard(dataNewCard) {
+  const dataCard = dataNewCard;
+  const readyCard = addCard({
+    informationCard: dataCard,
+    informationMe: dataUserInfo,
+  });
+  placesList.prepend(readyCard);
 }
 
 function handlerOpenPopupImage(evt) {
@@ -132,28 +130,18 @@ function handlerOpenPopupImage(evt) {
 function handlerFormEditProfile(evt, formElement) {
   evt.preventDefault();
   buttonPopupEditPtofileSubmit.textContent = "Сохранение...";
-  updatedUserData({ name: nameProfileInput.value, job: jobInput.value })
+  updateUserServerInfo({ name: nameProfileInput.value, job: jobInput.value })
     .then((res) => {
       profileTitle.textContent = res.name;
       profileDescription.textContent = res.about;
+      closeModal(popupEdit);
     })
     .catch((err) => {
-      return `Ошибка: ${err.status}`;
+      console.log(err);
     })
     .finally((res) => {
-      closeModal(popupEdit);
       buttonPopupEditPtofileSubmit.textContent = "Сохранить";
     });
-  clearValidation(
-    formElementEditProfile,
-    inputListFormProfile,
-    buttonPopupEditPtofileSubmit
-  );
-  clearValidation(
-    formElement,
-    inputListFormProfile,
-    buttonPopupEditPtofileSubmit
-  );
 }
 
 function handlerFormNewCard(evt, closeModal, formElement) {
@@ -164,24 +152,16 @@ function handlerFormNewCard(evt, closeModal, formElement) {
     link: urlInput.value,
     likes: [],
   };
-  const myData = initialization;
-  createNewPost({ dataCard: newCards, myData })
+  createNewPost({ dataCard: newCards })
     .then((res) => {
-      PreparingNewCard(res);
+      renderNewCard(res);
       closeModal(popupNewCard);
     })
     .catch((err) => {
-      console.log(`Ошибка: ${err.status}`);
+      console.log(err);
     })
     .finally((evt) => {
       buttonPopupAddCardSubmit.textContent = "Создать";
-      clearValidation(
-        formElement,
-        inputListFormAddCard,
-        buttonPopupAddCardSubmit
-      );
-      nameNewCardInput.value = "";
-      urlInput.value = "";
     });
 }
 
@@ -189,25 +169,20 @@ function handlerEditAvatar(evt, formElementEditAvatar) {
   evt.preventDefault();
   buttonPopupNewAvatarSubmit.textContent = "Сохранение...";
   const linkImg = formElementEditAvatar.querySelector(".popup__input_type_url");
-  requestChacgeAvatar(linkImg.value)
+  changeAvatar(linkImg.value)
     .then((link) => {
       profileImage.setAttribute(
         "style",
         `background-image: url(${link.avatar})`
       );
       linkImg.value = "";
+      closeModal(popupNewAvatar);
     })
     .catch((err) => {
-      return `Ошибка: ${err.status}`;
+      console.log(err);
     })
     .finally((res) => {
-      clearValidation(
-        formElementEditAvatar,
-        inputListFormEditAvatar,
-        buttonPopupNewAvatarSubmit
-      );
       buttonPopupNewAvatarSubmit.textContent = "Сохранить";
-      closeModal(popupNewAvatar);
     });
 }
 
@@ -226,6 +201,7 @@ buttonEdit.addEventListener("click", (evt) => {
 });
 
 buttonAdd.addEventListener("click", (evt) => {
+  formElementNewPlace.reset();
   clearValidation(
     formElementNewPlace,
     inputListFormAddCard,
@@ -235,6 +211,11 @@ buttonAdd.addEventListener("click", (evt) => {
 });
 
 profileImage.addEventListener("click", (evt) => {
+  clearValidation(
+    formElementEditAvatar,
+    inputListFormEditAvatar,
+    buttonPopupNewAvatarSubmit
+  );
   openModal(popupNewAvatar);
 });
 
@@ -261,21 +242,19 @@ formElementEditAvatar.addEventListener("submit", (evt) => {
 });
 //Валидация:
 
-function additionFormEventListeners() {
-  formList.forEach((formElement) => {
-    formElement.addEventListener("submit", (evt) => {
-      evt.preventDefault();
-    });
-    enableValidation({
-      formSelector: formElement,
-      inactiveButtonClass: "popup__button_disabled",
-      inputErrorClass: "popup__input_type_error",
-      errorClass: "popup__error_visible",
-    });
+formList.forEach((formElement) => {
+  enableValidation({
+    formSelector: formElement,
+    inputListFormProfile: Array.from(
+      formElement.querySelectorAll(".popup__input")
+    ),
+    buttonSubmit: formElement.querySelector(".popup__button"),
+    inactiveButtonClass: "popup__button_disabled",
+    inputErrorClass: "popup__input_type_error",
+    errorClass: "popup__error_visible",
   });
-}
+});
+
 //Добавление карточек и работа с сервером:
 
 PreparingCardsAndAccount();
-
-additionFormEventListeners();

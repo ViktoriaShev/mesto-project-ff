@@ -5,120 +5,99 @@ const config = {
     "Content-Type": "application/json",
   },
 };
+function OutputError(err) {
+  return Promise.reject(`Ошибка: ${err}`);
+}
 
-export const initialization = new Promise((resolve, reject) => {
-  fetch("https://nomoreparties.co/v1/wff-cohort-4/users/me", {
-    method: "GET",
-    headers: config.headers,
-  })
-    .then((res) => {
-      if (res.ok) {
-        resolve(res.json());
-      }
-    })
-    .catch((err) => {
-      reject(`Ошибка: ${err.status}`);
-    });
+export const getUserInfo = fetch(`${config.baseUrl}/users/me`, {
+  method: "GET",
+  headers: config.headers,
+}).then((res) => {
+  if (res.ok) {
+    return res.json();
+  }
+  return OutputError(res.status);
+});
+export const getCards = fetch(`${config.baseUrl}/cards`, {
+  method: "GET",
+  headers: config.headers,
+}).then((res) => {
+  if (res.ok) {
+    return res.json();
+  }
+  return OutputError(res.status);
 });
 
-export const downloadCards = new Promise((resolve, reject) => {
-  fetch("https://nomoreparties.co/v1/wff-cohort-4/cards", {
-    method: "GET",
-    headers: config.headers,
-  })
-    .then((res) => {
-      if (res.ok) {
-        resolve(res.json());
-      }
-    })
-    .catch((err) => {
-      reject(`Ошибка: ${err.status}`);
-    });
-});
-
-export const updatedUserData = (data) => {
-  return fetch("https://nomoreparties.co/v1/wff-cohort-4/users/me", {
+export const updateUserServerInfo = (data) => {
+  return fetch(`${config.baseUrl}/users/me`, {
     method: "PATCH",
     headers: config.headers,
     body: JSON.stringify({
       name: data.name,
       about: data.job,
     }),
-  })
-    .then((res) => {
+  }).then((res) => {
+    if (res.ok) {
       return res.json();
-    })
-    .catch((err) => {
-      return `Ошибка: ${err.status}`;
-    });
+    }
+    return OutputError(res.status);
+  });
 };
 
-export function createNewPost(data) {
-  return fetch("https://nomoreparties.co/v1/wff-cohort-4/cards", {
+export const createNewPost = (data) => {
+  return fetch(`${config.baseUrl}/cards`, {
     method: "POST",
     headers: config.headers,
     body: JSON.stringify({
       link: data.dataCard.link,
       name: data.dataCard.name,
     }),
-  })
-    .then((res) => {
+  }).then((res) => {
+    if (res.ok) {
       return res.json();
-    })
-    .catch((err) => {
-      return `Ошибка: ${err.status}`;
-    });
-}
+    }
+    return OutputError(res.status);
+  });
+};
 
-export const deletionRequest = (card) => {
-  return fetch("https://nomoreparties.co/v1/wff-cohort-4/cards/" + card, {
+export const deleteCard = (card) => {
+  return fetch(`${config.baseUrl}/cards/` + card, {
     method: "DELETE",
     headers: config.headers,
-  })
-    .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-    })
-    .catch((err) => {
-      return `Ошибка: ${err.status}`;
-    });
-};
-
-export const requestForLike = (cardId) => {
-  return fetch(
-    "https://nomoreparties.co/v1/wff-cohort-4/cards/likes/" + cardId,
-    {
-      method: "PUT",
-      headers: config.headers,
-    }
-  )
-    .then((res) => {
+  }).then((res) => {
+    if (res.ok) {
       return res.json();
-    })
-    .catch((err) => {
-      return `Ошибка: ${err.status}`;
-    });
-};
-
-export const requestForDeleteLike = (cardId) => {
-  return fetch(
-    "https://nomoreparties.co/v1/wff-cohort-4/cards/likes/" + cardId,
-    {
-      method: "DELETE",
-      headers: config.headers,
     }
-  )
-    .then((res) => {
-      return res.json();
-    })
-    .catch((err) => {
-      return `Ошибка: ${err.status}`;
-    });
+    return OutputError(res.status);
+  });
 };
 
-export const requestChacgeAvatar = (linkImg) => {
-  return fetch("https://nomoreparties.co/v1/wff-cohort-4/users/me/avatar", {
+export const addLike = (cardId) => {
+  return fetch(`${config.baseUrl}/cards/likes/` + cardId, {
+    method: "PUT",
+    headers: config.headers,
+  }).then((res) => {
+    if (res.ok) {
+      return res.json();
+    }
+    return OutputError(res.status);
+  });
+};
+
+export const removeLike = (cardId) => {
+  return fetch(`${config.baseUrl}/cards/likes/` + cardId, {
+    method: "DELETE",
+    headers: config.headers,
+  }).then((res) => {
+    if (res.ok) {
+      return res.json();
+    }
+    return OutputError(res.status);
+  });
+};
+
+export const changeAvatar = (linkImg) => {
+  return fetch(`${config.baseUrl}/users/me/avatar`, {
     method: "PATCH",
     headers: {
       authorization: "74dd0d65-9856-4f64-bb86-97d9403b4cb0",
@@ -127,11 +106,10 @@ export const requestChacgeAvatar = (linkImg) => {
     body: JSON.stringify({
       avatar: linkImg,
     }),
-  })
-    .then((res) => {
+  }).then((res) => {
+    if (res.ok) {
       return res.json();
-    })
-    .catch((err) => {
-      return `Ошибка: ${err.status}`;
-    });
+    }
+    return OutputError(res.status);
+  });
 };
