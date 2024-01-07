@@ -1,3 +1,2 @@
 # Проектная работа Mesto
-
-https://github.com/ViktoriaShev/mesto-project-ff.git
+https://viktoriashev.github.io/mesto-project-ff/
