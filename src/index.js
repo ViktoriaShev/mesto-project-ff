@@ -99,7 +99,7 @@ function renderInitialCards(data) {
   });
 }
 
-function PreparingCardsAndAccount() {
+function loadInitialInfo() {
   Promise.all(dataForCards)
     .then((data) => {
       window.dataUserInfo = data[0];
@@ -257,4 +257,4 @@ formList.forEach((formElement) => {
 
 //Добавление карточек и работа с сервером:
 
-PreparingCardsAndAccount();
+loadInitialInfo();

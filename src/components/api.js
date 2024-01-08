@@ -5,27 +5,26 @@ const config = {
     "Content-Type": "application/json",
   },
 };
-function OutputError(err) {
-  return Promise.reject(`Ошибка: ${err}`);
+
+function checkResponse(res) {
+  if (res.ok) {
+    return res.json();
+  }
+  return Promise.reject(`Ошибка: ${res.status}`);
 }
 
 export const getUserInfo = fetch(`${config.baseUrl}/users/me`, {
   method: "GET",
   headers: config.headers,
 }).then((res) => {
-  if (res.ok) {
-    return res.json();
-  }
-  return OutputError(res.status);
+  return checkResponse(res);
 });
+
 export const getCards = fetch(`${config.baseUrl}/cards`, {
   method: "GET",
   headers: config.headers,
 }).then((res) => {
-  if (res.ok) {
-    return res.json();
-  }
-  return OutputError(res.status);
+  return checkResponse(res);
 });
 
 export const updateUserServerInfo = (data) => {
@@ -37,10 +36,7 @@ export const updateUserServerInfo = (data) => {
       about: data.job,
     }),
   }).then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return OutputError(res.status);
+    return checkResponse(res);
   });
 };
 
@@ -53,10 +49,7 @@ export const createNewPost = (data) => {
       name: data.dataCard.name,
     }),
   }).then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return OutputError(res.status);
+    return checkResponse(res);
   });
 };
 
@@ -65,10 +58,7 @@ export const deleteCard = (card) => {
     method: "DELETE",
     headers: config.headers,
   }).then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return OutputError(res.status);
+    return checkResponse(res);
   });
 };
 
@@ -77,10 +67,7 @@ export const addLike = (cardId) => {
     method: "PUT",
     headers: config.headers,
   }).then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return OutputError(res.status);
+    return checkResponse(res);
   });
 };
 
@@ -89,27 +76,18 @@ export const removeLike = (cardId) => {
     method: "DELETE",
     headers: config.headers,
   }).then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return OutputError(res.status);
+    return checkResponse(res);
   });
 };
 
 export const changeAvatar = (linkImg) => {
   return fetch(`${config.baseUrl}/users/me/avatar`, {
     method: "PATCH",
-    headers: {
-      authorization: "74dd0d65-9856-4f64-bb86-97d9403b4cb0",
-      "Content-Type": "application/json",
-    },
+    headers: config.headers,
     body: JSON.stringify({
       avatar: linkImg,
     }),
   }).then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return OutputError(res.status);
+    return checkResponse(res);
   });
 };
